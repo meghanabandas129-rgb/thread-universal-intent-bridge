@@ -1296,8 +1296,7 @@ export function analyzeSituationLocally(
     relationships,
   };
 }
-
-  throw new Error("Unable to analyze situation: no matching scenario found.");
 }
+
 
 
