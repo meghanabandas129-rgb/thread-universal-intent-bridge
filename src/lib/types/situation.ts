@@ -48,7 +48,7 @@ export interface UnknownInfo {
 export interface ConnectedSystem {
   id: string;
   name: string;
-  agencyType: "government" | "ngo_relief" | "school_district" | "healthcare" | "utility" | "legal_aid";
+  agencyType: "government" | "ngo_relief" | "school_district" | "healthcare" | "utility" | "legal_aid" | "financial";
   purpose: string;
   contactChannel: string;
   requiredDocuments: string[];
@@ -157,7 +157,7 @@ export const UnknownInfoSchema = z.object({
 export const ConnectedSystemSchema = z.object({
   id: z.string(),
   name: z.string(),
-  agencyType: z.enum(["government", "ngo_relief", "school_district", "healthcare", "utility", "legal_aid"]),
+  agencyType: z.enum(["government", "ngo_relief", "school_district", "healthcare", "utility", "legal_aid", "financial"]),
   purpose: z.string(),
   contactChannel: z.string(),
   requiredDocuments: z.array(z.string()),
@@ -241,3 +241,5 @@ export const SituationModelSchema = z.object({
   actions: z.array(ActionSchema),
   relationships: z.array(RelationshipSchema),
 });
+
+
