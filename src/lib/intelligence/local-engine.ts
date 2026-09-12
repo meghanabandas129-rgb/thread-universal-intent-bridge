@@ -59,7 +59,7 @@ const DOMAIN_PATTERNS: DomainPattern[] = [
       "choking",
       "fracture",
     ],
-    secondaryKeywords: ["ambulance", "hospital", "doctor", "emergency", "pain", "hurt", "injured", "passed out", "fell", "insulin runs out"],
+    secondaryKeywords: ["ambulance", "hospital", "doctor", "pain", "hurt", "injured", "passed out", "fell", "insulin runs out"],
     urgencyBoosters: ["now", "immediately", "suddenly", "dying", "help", "don't know what to do"],
   },
   {
@@ -423,6 +423,38 @@ export function analyzeSituationLocally(
   // Sort signals by score descending
   detectedSignals.sort((a, b) => b.score - a.score);
 
+  // Ensure strong wallet/card/identity-loss stories are classified
+  // primarily as document-loss recovery situations.
+  const isWalletSituation =
+    lowerText.includes("lost my wallet") ||
+    lowerText.includes("lost wallet") ||
+    lowerText.includes("wallet was lost") ||
+    lowerText.includes("wallet stolen") ||
+    lowerText.includes("lost my purse") ||
+    lowerText.includes("lost purse") ||
+    lowerText.includes("purse was stolen") ||
+    lowerText.includes("bank card") ||
+    lowerText.includes("bank cards") ||
+    lowerText.includes("debit card") ||
+    lowerText.includes("credit card") ||
+    lowerText.includes("atm card") ||
+    lowerText.includes("payment card") ||
+    lowerText.includes("cards were stolen") ||
+    lowerText.includes("cards were lost") ||
+    lowerText.includes("identity misuse") ||
+    lowerText.includes("identity theft") ||
+    lowerText.includes("identity fraud");
+
+  if (isWalletSituation) {
+    const walletSignal = detectedSignals.find(
+      (s) => s.domain.id === "document_loss_recovery"
+    );
+
+    if (walletSignal) {
+      walletSignal.score += 100;
+      detectedSignals.sort((a, b) => b.score - a.score);
+    }
+  }
   // --- Step 2: Determine Overall Severity & Primary Domain ---
   const hasLifeSafety = detectedSignals.some((s) => s.domain.id === "medical_emergency");
   const hasDisplacement = detectedSignals.some((s) => s.domain.id === "housing_displacement" || s.domain.id === "flood_natural_disaster");
@@ -625,6 +657,7 @@ export function analyzeSituationLocally(
   },
   status: "pending",
 });
+  }
   // 4C. Handle Document Loss / Damage (e.g. TEST 1 & TEST 4)
   if (detectedSignals.some((s) => s.domain.id === "document_loss_recovery")) {
     const isLostWallet =
@@ -788,7 +821,7 @@ export function analyzeSituationLocally(
         relationType: "depends_on",
         label: "Board requires certified loss receipt to print duplicate",
       });
-    } else {
+    } else if (!isLostWallet) {
       // General Vital Documents (Flood / Fire)
       addSystem(SYSTEM_REGISTRY.vital_records_dept);
 
@@ -826,8 +859,6 @@ export function analyzeSituationLocally(
 });
       }
     }
-  }
-
   // 4D. Handle Education Disruption (e.g. TEST 1: school books & laptop damaged)
   if (detectedSignals.some((s) => s.domain.id === "education_continuity") && !needs.some((n) => n.id === "need-doc-certificates")) {
     addSystem(SYSTEM_REGISTRY.school_district_liaison);
@@ -864,6 +895,7 @@ export function analyzeSituationLocally(
   },
   status: "pending",
 });
+}
 
   // 4E. Handle Power Outage & Food Spoilage & Elderly (e.g. TEST 3)
   if (detectedSignals.some((s) => s.domain.id === "power_infrastructure_failure" || s.domain.id === "food_spoilage_shortage")) {
@@ -1296,7 +1328,7 @@ export function analyzeSituationLocally(
     relationships,
   };
 }
-}
+
 
 
 

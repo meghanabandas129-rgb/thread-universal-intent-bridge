@@ -29,10 +29,10 @@ export async function POST(req: NextRequest) {
     const validationResult = SituationModelSchema.safeParse(situationModel);
     if (!validationResult.success) {
       console.warn("Local engine Zod schema validation warning:", validationResult.error);
-      return NextResponse.json(situationModel);
+      return NextResponse.json(JSON.parse(JSON.stringify(situationModel)));
     }
 
-    return NextResponse.json(validationResult.data);
+    return NextResponse.json(JSON.parse(JSON.stringify(validationResult.data)));
   } catch (error: any) {
     console.error("Local reasoning engine error in /api/analyze:", error);
     return NextResponse.json(
@@ -41,3 +41,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
